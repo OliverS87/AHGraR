@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <title>AHGraR-web with KnetMaps.js, Bootstrap and jsTree</title>
+      <meta charset="utf-8">
+      <!-- Load jquery required by Bootstrap and KnetMaps.js -->
+      <script src="libs/jquery-1.11.2.min.js"></script>
+      <!-- Bootstrap -->
+      <!-- Define screen width and initial scale-->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!--Load Bootstrap CSS and JS-->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <!-- Load jsTree -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+      <!-- Load KnetMaps.js as described here:
+      https://github.com/Rothamsted/knetmaps.js/blob/master/docs/QuickStart_Guide.md-->
+      <link href="css/index-style.css" rel="stylesheet" /> <!-- page stylesheet-->
+      <link href="css/knet-style.css" rel="stylesheet" /> <!-- Network Viewer stylesheet -->
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+      <link href="css/maskloader.css" rel="stylesheet">
+      <script src="libs/cytoscapejs_2.4.0/cytoscape.min.js"></script>
+      <script src="libs/jquery-ui.js"></script>
+      <script src="libs/cytoscape-cxtmenu.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+      <script src="libs/cytoscape-qtip.js"></script>
+      <script src="libs/jquery.maskloader.js"></script>
+      <!-- Layouts -->
+      <script src="libs/cose_bilkent/cytoscape-cose-bilkent.js"></script>
+      <script src="libs/ngraph_forceLayout/cytoscape-ngraph.forcelayout.js"></script>
+      <!-- KnetMaps code -->
+      <script src="javascript/knet-maskLoader.js"></script>
+      <script src="javascript/knet-layouts-defaultParams.js"></script>
+      <script src="javascript/knet-layouts.js"></script>
+      <script src="javascript/knet-menu.js"></script> <!-- KnetMaps menubar -->
+      <script src="javascript/knet-counts-legend.js"></script>
+      <script src="javascript/knet-container.js"></script>
+      <script src="javascript/knet-toggleFullScreen.js"></script>
+      <script src="javascript/knet-generator.js"></script>
+      <!-- Code specific for AHGraR that interacts with KnetMaps-->
+      <script src="javascript/knet-itemInfoAHGraR.js"></script>
+      <script src="javascript/select_sensitivity.js"></script>
+      <script src="javascript/extend_graph.js"></script>
+      <script src="javascript/color_mapper.js"></script>
+      <script src="javascript/color_legend.js"></script>
+      <script src="javascript/searchbar.js"></script>
+      <script src="javascript/ahgrar_qtips.js"></script>
+      <script src="javascript/export_csv.js"></script>
+      <script src="javascript/ws-connection.js"></script>
+      <!-- Launch viewer -->
+      <script src="js/launchNetwork.js"></script>
+
+
+
+
+  </head>
+  <body>
+    <div class="container-fluid" style="background-color:white;">
+    <div class="row">
+    <div class="col-sm-12" style="background-color:transparent;background-image: linear-gradient(to right, rgb(155, 226, 255) 0%, rgb(73, 209, 71) 100%);">
+      <h1>AHGraR</h1>
+    </div>
+    </div>
+    <div class="row" style = "padding:5px">
+    <div class="col-sm-8 well" style="background-color:white;border-radius:10px;">
+    <form class="form-inline">
+        <div class="form-group">
+            <label for="select_proj">Project:</label>
+            <select class="form-control" id="select_proj" onChange="javascript:changeProjectID();">
+            </select>
+            <label for="select_species">Assembly:</label>
+            <select class="form-control" id="select_species" onChange="javascript:changeSpecies();">
+            </select>
+            <label for="select_chromosome">Contig:</label>
+            <select class="form-control" id="select_chromosome">
+            </select>
+        </div>
+    </form>
+    </div>
+    </div>
+    <div class="row" style="padding:5px">
+    <div class="col-sm-4 well" style="background-color:white;border-radius:10px;">
+    <form class="form">
+        <div class="input-group">
+            <label for="keyword">Search by keyword(s):</label>
+            <input id="keyword" type="text" class="form-control" name="keyword" placeholder="Keyword(s)">
+        </div>
+        <div>
+        <label class="radio-inline"><input checked type="radio" id="radio_all" name="radio">Match all keywords</label>
+        <label class="radio-inline"><input type="radio" id="radio_any" name="radio">Match at least one keyword</label>
+        </div>
+        <button type="button" class="btn btn-default" id = "search_kwd_btm" onclick="searchKeyword()">Search by keyword</button>
+        <button type="button" class="btn btn-default" style="display:none;" id = "search_kwd_cancel" onclick="cancelSearchKeyword()">Cancel search</button>
+        </form>
+    </div>
+    <div class="col-sm-8 well" style="background-color:white;border-radius:10px;">
+    <form>
+        <div class="col-sm-8 " style="background-color:white;">
+        <div class="form-group">
+            <label for="tbfasta">Search by sequence:</label>
+            <textarea class="form-control" rows="3" id="tbfasta" placeholder="Nucleotide or protein FASTA"></textarea>
+        </div>
+        </div>
+        <div class="col-sm-4 " style="background-color:white;">
+            <div class="input-group">
+            <label for="blastsens">E-value cutoff:</label>
+            <input id="blastsens" type="text" class="form-control" name="blastsens" value="0.95">
+
+            </div>
+        <button type="button" class="btn btn-default" id="btn_blast" onclick="searchBLAST()">Search by BLAST</button>
+            <button type="button" class="btn btn-default" style="display:none;" id = "btn_blast_cancel" onclick="cancelSearchBLAST()">Cancel search</button>
+        </div>
+    </form>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-sm-4 collapse" id="result-tree" style="background-color:white;">
+         <div style="box-sizing: border-box;" id="jstree_div"></div><br/>
+
+    </div>
+        <div class="col-sm-4 collapse" id="result-button" style="background-color:white;">
+            <button type="button" class="btn btn-default" id="render_data_btn" data="" onclick="renderJSON()">Show graph</button>
+            </div>
+    </div>
+    <div class="row">
+    <div class="col-sm-12 collapse" id="knet-maps-row" style="background-color:white;">
+      <div id="knet-maps">
+                <div id="itemInfo" class="infoDiv" style="display:none;"><!-- Item Info pane -->
+                    <table id="itemInfo_Table" class="infoTable" cellspacing=1>
+                        <thead><th>Item Info:</th>
+                    <th><button id="btnCloseItemInfoPane" onclick="closeItemInfoPane();">Close</button></th>
+                        </thead><tbody></tbody></table>
+                </div>
+                <!-- KnetMaps Menubar -->
+                <div id="knetmaps-menu"></div>
+                <!-- The core cytoscapeJS container -->
+                <div style="height: 400px;" id="cy"></div><br/>
+                <!-- popup dialog -->
+                <div id="infoDialog"></div>
+            </div>
+    </div>
+    </div>
+    <div class="row" style="padding:5px">
+        <div class="col-sm-12 collapse well" id = "statusbar" style="background-color:white;border-radius:10px;">
+      <div id="countsLegend"><span>KnetMaps</span></div>
+            <div id="colorLegend" ></div>
+    </div>
+    </div>
+    </div>
+  <script>
+
+      // Define global variables
+      var project_id = "0";
+      var species = "";
+      var color_map = {};
+      var search_result = [];
+      var ws_conn;
+      // Load lists of available projects
+      LoadProjectList();
+
+
+            </script>
+  </body>
+</html>
