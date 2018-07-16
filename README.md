@@ -14,3 +14,4 @@ Most modules of AHGraR are written in Python 3.5. The webinterface
 extends KnetMaps.js and is based on JavaScript. Additional third-party tools include MCL, BLAST+ and
 Neo4j.
 
+Please see the project wiki for a complete tutorial.
